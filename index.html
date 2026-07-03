@@ -1,79 +1,56 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STrava</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Rekap Aktivitas Kamis Strava</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #fc4c02; color: white; }
+    </style>
 </head>
-<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
+<body>
 
-    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 w-full max-w-sm">
-        <div class="mb-8 text-center">
-            <h1 class="text-2xl font-bold text-sky-600">SiMAB</h1>
-            <p class="text-xs text-slate-500 tracking-widest font-semibold">Sistem Monitoring Anggaran Belanja</p>
-        </div>
+    <h2>Rekap Aktivitas Hari Kamis</h2>
+    <button onclick="fetchStravaData()">Muat Aktivitas Kamis</button>
 
-        <form id="loginForm" class="space-y-4">
-            <div>
-                <input type="text" id="nip" placeholder="NIP" required
-                    class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition">
-            </div>
-            <div>
-                <input type="password" id="password" placeholder="Password" required
-                    class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition">
-            </div>
-            <button type="submit" id="loginBtn"
-                class="w-full bg-sky-600 text-white py-3 rounded-lg font-semibold hover:bg-sky-700 transition">
-                Masuk
-            </button>
-        </form>
-    </div>
+    <table id="rekapTable">
+        <thead>
+            <tr>
+                <th>Nama Anggota</th>
+                <th>Jenis Aktivitas</th>
+                <th>Jarak (km)</th>
+                <th>Durasi (menit)</th>
+            </tr>
+        </thead>
+        <tbody id="dataBody">
+            </tbody>
+    </table>
 
-    
     <script>
-        // MASUKKAN URL DARI "GAS REDIRECTOR" ANDA DI SINI
-        const redirectorUrl = "https://script.google.com/macros/s/AKfycbxhclFUTLCSzjQHK-W-dyZgF3dFeF5SaJEk6JvdhMU_6HA9Bs_avFb9G25gPrWT1XxXxA/exec";
+        async function fetchStravaData() {
+            // Catatan: Anda perlu mengganti URL ini dengan endpoint API Strava Anda
+            // atau backend proxy yang menangani OAuth Strava.
+            alert("Membutuhkan integrasi API Strava dengan Access Token.");
+            
+            // Contoh struktur data yang akan diproses:
+            const data = [
+                { nama: "Budi", tipe: "Run", jarak: 5.2, durasi: 30 },
+                { nama: "Siti", tipe: "Ride", jarak: 25.0, durasi: 60 }
+            ];
 
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('loginBtn');
-            btn.disabled = true;
-            btn.innerText = "Memproses...";
-
-            try {
-                // 1. Ambil URL GAS Utama yang dinamis dari Redirector
-                const resUrl = await fetch(redirectorUrl);
-                const realUrl = await resUrl.text();
-
-                // 2. Gunakan URL tersebut untuk proses login
-                const res = await fetch(realUrl, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'login',
-                        nip: document.getElementById('nip').value,
-                        password: document.getElementById('password').value
-                    })
-                });
-                const data = await res.json();
-
-                if (data.status === 'success') {
-                    sessionStorage.setItem('nama', data.nama);
-                    sessionStorage.setItem('nip', data.nip);
-                    sessionStorage.setItem('realUrl', realUrl); // Simpan agar dashboard tahu URL-nya
-                    sessionStorage.setItem('admin', data.admin);
-                    window.location.href = 'dashboard.html';
-                } else {
-                    alert(data.message);
-                }
-            } catch (err) {
-                alert("Koneksi ke server gagal, pastikan redirector aktif.");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "Masuk";
-            }
-        });
+            const tbody = document.getElementById('dataBody');
+            data.forEach(item => {
+                let row = `<tr>
+                    <td>${item.nama}</td>
+                    <td>${item.tipe}</td>
+                    <td>${item.jarak}</td>
+                    <td>${item.durasi}</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
     </script>
 </body>
 </html>
