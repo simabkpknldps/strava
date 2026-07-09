@@ -3,19 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ekstrak Leaderboard Strava</title>
+<title>Bookmarklet Ekstrak Leaderboard Strava</title>
 <style>
   :root{
     --ink:#1b1b1b;
     --paper:#fbf9f6;
     --panel:#ffffff;
     --line:#e7e2da;
-    --accent:#fc5200; /* strava orange */
+    --accent:#fc5200;
     --accent-dark:#c74000;
     --muted:#6b6560;
-    --gold:#d4a017;
-    --silver:#9aa0a6;
-    --bronze:#b5651d;
   }
   *{ box-sizing:border-box; }
   body{
@@ -39,7 +36,7 @@
   }
   header h1{
     margin: 0;
-    font-size: clamp(24px, 4vw, 34px);
+    font-size: clamp(24px, 4vw, 32px);
     font-weight: 800;
     letter-spacing: -0.01em;
   }
@@ -49,152 +46,138 @@
     font-size: 14.5px;
     max-width: 640px;
   }
-
   main{
-    max-width: 980px;
+    max-width: 760px;
     margin: 0 auto;
     padding: 28px 20px 60px;
   }
-
   .panel{
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 10px;
-    padding: 22px;
-    margin-bottom: 24px;
+    padding: 24px;
+    margin-bottom: 22px;
   }
-
-  .upload-zone{
-    border: 2px dashed var(--line);
-    border-radius: 10px;
-    padding: 28px 20px;
-    text-align: center;
-    transition: border-color .15s ease, background .15s ease;
+  .panel h2{
+    margin: 0 0 6px;
+    font-size: 17px;
+    display:flex;
+    align-items:center;
+    gap:10px;
   }
-  .upload-zone.drag{
-    border-color: var(--accent);
-    background: #fff6f0;
+  .step-num{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    flex-shrink:0;
   }
-  .upload-zone p{
-    margin: 0 0 14px;
+  .panel p{
     color: var(--muted);
     font-size: 14px;
+    line-height: 1.6;
+    margin: 8px 0 0;
   }
-  .upload-zone strong{ color: var(--ink); }
-
-  input[type="file"]{ display:none; }
-
-  .btn{
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 11px 20px;
-    border-radius: 999px;
-    border: none;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    background: var(--accent);
-    color: #fff;
-    transition: background .15s ease, transform .1s ease;
-  }
-  .btn:hover{ background: var(--accent-dark); }
-  .btn:active{ transform: scale(.97); }
-  .btn.secondary{
-    background: var(--ink);
-  }
-  .btn.secondary:hover{ background: #000; }
-  .btn:disabled{
-    background: #d8d3ca;
-    cursor: not-allowed;
-  }
-
-  .toolbar{
+  .bookmarklet-row{
     display:flex;
-    flex-wrap: wrap;
     align-items:center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 16px;
+    gap:14px;
+    flex-wrap:wrap;
+    margin: 16px 0 6px;
+    padding: 16px;
+    background: #fff6f0;
+    border: 1px dashed var(--accent);
+    border-radius: 10px;
   }
-  .toolbar .actions{
-    display:flex;
-    gap: 10px;
-    flex-wrap: wrap;
+  .bookmarklet-link{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding: 12px 22px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff !important;
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 14.5px;
+    cursor: grab;
+    box-shadow: 0 2px 0 var(--accent-dark);
+    white-space: nowrap;
   }
-  .club-meta{
+  .bookmarklet-link:active{ cursor: grabbing; }
+  .drag-hint{
     font-size: 13px;
     color: var(--muted);
   }
-  .club-meta strong{
-    color: var(--ink);
-    font-size: 15px;
-    display:block;
-    margin-bottom: 2px;
+  details{
+    margin-top: 14px;
   }
-
-  #status{
+  summary{
+    cursor: pointer;
     font-size: 13.5px;
-    margin-top: 12px;
-    min-height: 18px;
+    color: var(--accent-dark);
+    font-weight: 700;
   }
-  #status.error{ color: #b3261e; }
-  #status.ok{ color: #2e7d32; }
-
-  table.leaderboard-table{
+  textarea{
     width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-  }
-  table.leaderboard-table thead th{
-    text-align: left;
-    font-size: 11.5px;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: var(--muted);
-    border-bottom: 2px solid var(--ink);
-    padding: 10px 10px;
-    white-space: nowrap;
-  }
-  table.leaderboard-table tbody td{
-    padding: 10px 10px;
-    border-bottom: 1px solid var(--line);
-    vertical-align: middle;
-  }
-  table.leaderboard-table tbody tr:nth-child(even){
-    background: #faf7f2;
-  }
-  td.col-rank{
-    font-weight: 800;
-    width: 46px;
-    text-align: center;
-    font-variant-numeric: tabular-nums;
-  }
-  tr[data-rank="1"] td.col-rank{ color: var(--gold); }
-  tr[data-rank="2"] td.col-rank{ color: var(--silver); }
-  tr[data-rank="3"] td.col-rank{ color: var(--bronze); }
-  td.col-athlete{ font-weight: 600; }
-  td.col-num{ font-variant-numeric: tabular-nums; }
-
-  .empty-state{
-    text-align: center;
-    padding: 30px 10px;
-    color: var(--muted);
-    font-size: 14px;
-  }
-
-  footer.note{
-    font-size: 12px;
-    color: var(--muted);
+    height: 120px;
     margin-top: 10px;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 11.5px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    resize: vertical;
+    color: #333;
   }
-
-  @media print{
-    header, .panel.upload-panel, .toolbar .actions, footer.note{ display:none !important; }
-    body{ background:#fff; }
-    main{ padding:0; max-width:none; }
-    .panel.result-panel{ border:none; padding:0; }
-    table.leaderboard-table thead th{ border-bottom: 2px solid #000; }
+  .btn-copy{
+    margin-top: 8px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: none;
+    background: var(--ink);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn-copy:hover{ background:#000; }
+  ol.manual-steps{
+    margin: 10px 0 0;
+    padding-left: 20px;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.7;
+  }
+  .note{
+    font-size: 12.5px;
+    color: var(--muted);
+    background: #f3f1ec;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 4px;
+  }
+  code{
+    background: #f0ede7;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12.5px;
+  }
+  .badge-warn{
+    display:inline-block;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #8a5a00;
+    background: #fff2d6;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-left: 8px;
   }
 </style>
 </head>
@@ -202,202 +185,70 @@
 
 <header>
   <div class="eyebrow">Strava Club Tools</div>
-  <h1>Ekstrak Leaderboard</h1>
-  <p>Unggah file HTML halaman leaderboard klub Strava (hasil "Save Page As"), dan tabel peringkat akan otomatis diekstrak dan ditampilkan rapi di bawah ini, siap untuk dicetak atau disimpan sebagai PDF.</p>
+  <h1>Bookmarklet Ekstrak Leaderboard</h1>
+  <p>Simpan tombol di bawah sebagai bookmark. Setelah itu, buka halaman leaderboard klub Strava manapun (yang sudah kamu login) dan klik bookmark-nya — tabel leaderboard langsung diekstrak dan dibuka rapi di tab baru, siap dicetak atau disimpan sebagai PDF. Tidak perlu save file atau upload manual lagi.</p>
 </header>
 
 <main>
-  <section class="panel upload-panel">
-    <div class="upload-zone" id="dropZone">
-      <p><strong>Seret &amp; lepas</strong> file HTML di sini, atau</p>
-      <button class="btn" id="chooseFileBtn" type="button">Pilih File HTML</button>
-      <input type="file" id="fileInput" accept=".html,.htm">
+
+  <section class="panel">
+    <h2><span class="step-num">1</span> Simpan bookmarklet-nya</h2>
+    <p>Tampilkan bar bookmark browser kamu (biasanya <code>Ctrl/Cmd + Shift + B</code>), lalu seret tombol oranye di bawah ini ke bar bookmark.</p>
+    <div class="bookmarklet-row">
+      <a class="bookmarklet-link" href="javascript:(function%20()%20%7B%20function%20ct(tr%2C%20sel)%20%7B%20var%20el%20%3D%20tr.querySelector(sel)%3B%20return%20el%20%3F%20el.textContent.replace(%2F%5Cs%2B%2Fg%2C%20'%20').trim()%20%3A%20''%3B%20%7D%20function%20esc(s)%20%7B%20return%20String(s)%20.replace(%2F%26%2Fg%2C%20'%26amp%3B')%20.replace(%2F%3C%2Fg%2C%20'%26lt%3B')%20.replace(%2F%3E%2Fg%2C%20'%26gt%3B')%20.replace(%2F%22%2Fg%2C%20'%26quot%3B')%3B%20%7D%20var%20table%20%3D%20document.querySelector('div.leaderboard%20table.dense.striped.sortable')%20%7C%7C%20document.querySelector('table.dense.striped.sortable')%20%7C%7C%20document.querySelector('div.leaderboard%20table')%3B%20if%20(!table)%20%7B%20alert('Tabel%20leaderboard%20tidak%20ditemukan.%5CnPastikan%20Anda%20berada%20di%20halaman%20%22Club%20Leaderboard%22%20Strava%2C%20lalu%20coba%20lagi.')%3B%20return%3B%20%7D%20var%20rows%20%3D%20Array.prototype.slice%20.call(table.querySelectorAll('tbody%20tr'))%20.map(function%20(tr)%20%7B%20var%20rankEl%20%3D%20tr.querySelector('td.rank')%3B%20var%20rank%20%3D%20rankEl%20%3F%20rankEl.textContent.trim()%20%3A%20''%3B%20var%20athleteEl%20%3D%20tr.querySelector('a.athlete-name')%3B%20var%20athlete%20%3D%20athleteEl%20%3F%20athleteEl.textContent.trim()%20%3A%20''%3B%20return%20%7B%20rank%3A%20rank%2C%20athlete%3A%20athlete%2C%20mt%3A%20ct(tr%2C%20'td.moving_time')%2C%20na%3A%20ct(tr%2C%20'td.num_activities')%2C%20dist%3A%20ct(tr%2C%20'td.distance')%2C%20el%3A%20ct(tr%2C%20'td.elev_gain')%2C%20%7D%3B%20%7D)%20.filter(function%20(r)%20%7B%20return%20r.athlete%3B%20%7D)%3B%20if%20(!rows.length)%20%7B%20alert('Tabel%20ditemukan%2C%20tapi%20tidak%20ada%20baris%20data%20yang%20bisa%20diekstrak.')%3B%20return%3B%20%7D%20var%20clubName%20%3D%20(document.title%20%7C%7C%20'').split('%7C')%5B0%5D.trim()%3B%20var%20headingEl%20%3D%20document.getElementById('leaderboard-heading')%3B%20var%20period%20%3D%20headingEl%20%3F%20headingEl.textContent.trim()%20%3A%20''%3B%20var%20w%20%3D%20window.open(''%2C%20'_blank')%3B%20if%20(!w)%20%7B%20alert('Popup%20diblokir%20browser.%20Izinkan%20popup%20untuk%20strava.com%2C%20lalu%20klik%20bookmarklet%20ini%20lagi.')%3B%20return%3B%20%7D%20var%20rowsHtml%20%3D%20rows%20.map(function%20(r)%20%7B%20return%20(%20'%3Ctr%20data-rank%3D%22'%20%2B%20esc(r.rank)%20%2B%20'%22%3E'%20%2B%20'%3Ctd%20class%3D%22col-rank%22%3E'%20%2B%20esc(r.rank)%20%2B%20'%3C%2Ftd%3E'%20%2B%20'%3Ctd%20class%3D%22col-athlete%22%3E'%20%2B%20esc(r.athlete)%20%2B%20'%3C%2Ftd%3E'%20%2B%20'%3Ctd%20class%3D%22col-num%22%3E'%20%2B%20esc(r.mt)%20%2B%20'%3C%2Ftd%3E'%20%2B%20'%3Ctd%20class%3D%22col-num%22%3E'%20%2B%20esc(r.na)%20%2B%20'%3C%2Ftd%3E'%20%2B%20'%3Ctd%20class%3D%22col-num%22%3E'%20%2B%20esc(r.dist)%20%2B%20'%3C%2Ftd%3E'%20%2B%20'%3Ctd%20class%3D%22col-num%22%3E'%20%2B%20esc(r.el)%20%2B%20'%3C%2Ftd%3E'%20%2B%20'%3C%2Ftr%3E'%20)%3B%20%7D)%20.join('')%3B%20var%20css%20%3D%20'%3Aroot%7B--ink%3A%231b1b1b%3B--paper%3A%23fbf9f6%3B--line%3A%23e7e2da%3B--accent%3A%23fc5200%3B--accent-dark%3A%23c74000%3B--muted%3A%236b6560%3B--gold%3A%23d4a017%3B--silver%3A%239aa0a6%3B--bronze%3A%23b5651d%3B%7D'%20%2B%20'*%7Bbox-sizing%3Aborder-box%3B%7D'%20%2B%20'body%7Bmargin%3A0%3Bfont-family%3A%22Segoe%20UI%22%2CRoboto%2CHelvetica%2CArial%2Csans-serif%3Bbackground%3Avar(--paper)%3Bcolor%3Avar(--ink)%3B%7D'%20%2B%20'header%7Bpadding%3A28px%2024px%2018px%3Bborder-bottom%3A3px%20solid%20var(--ink)%3Bbackground%3A%23fff%3B%7D'%20%2B%20'header%20.eyebrow%7Bfont-size%3A12px%3Bletter-spacing%3A.14em%3Btext-transform%3Auppercase%3Bcolor%3Avar(--accent)%3Bfont-weight%3A700%3Bmargin-bottom%3A6px%3B%7D'%20%2B%20'header%20h1%7Bmargin%3A0%3Bfont-size%3A26px%3Bfont-weight%3A800%3Bletter-spacing%3A-0.01em%3B%7D'%20%2B%20'header%20p%7Bmargin%3A6px%200%200%3Bcolor%3Avar(--muted)%3Bfont-size%3A14px%3B%7D'%20%2B%20'main%7Bmax-width%3A900px%3Bmargin%3A0%20auto%3Bpadding%3A22px%2020px%2050px%3B%7D'%20%2B%20'.toolbar%7Bdisplay%3Aflex%3Bjustify-content%3Aflex-end%3Bmargin-bottom%3A14px%3B%7D'%20%2B%20'.btn%7Bdisplay%3Ainline-flex%3Balign-items%3Acenter%3Bgap%3A8px%3Bpadding%3A10px%2018px%3Bborder-radius%3A999px%3Bborder%3Anone%3Bfont-size%3A14px%3Bfont-weight%3A700%3Bcursor%3Apointer%3Bbackground%3Avar(--accent)%3Bcolor%3A%23fff%3B%7D'%20%2B%20'.btn%3Ahover%7Bbackground%3Avar(--accent-dark)%3B%7D'%20%2B%20'table.leaderboard-table%7Bwidth%3A100%25%3Bborder-collapse%3Acollapse%3Bfont-size%3A14px%3Bbackground%3A%23fff%3B%7D'%20%2B%20'table.leaderboard-table%20thead%20th%7Btext-align%3Aleft%3Bfont-size%3A11.5px%3Bletter-spacing%3A.06em%3Btext-transform%3Auppercase%3Bcolor%3Avar(--muted)%3Bborder-bottom%3A2px%20solid%20var(--ink)%3Bpadding%3A10px%3Bwhite-space%3Anowrap%3B%7D'%20%2B%20'table.leaderboard-table%20tbody%20td%7Bpadding%3A10px%3Bborder-bottom%3A1px%20solid%20var(--line)%3B%7D'%20%2B%20'table.leaderboard-table%20tbody%20tr%3Anth-child(even)%7Bbackground%3A%23faf7f2%3B%7D'%20%2B%20'td.col-rank%7Bfont-weight%3A800%3Bwidth%3A46px%3Btext-align%3Acenter%3Bfont-variant-numeric%3Atabular-nums%3B%7D'%20%2B%20'tr%5Bdata-rank%3D%221%22%5D%20td.col-rank%7Bcolor%3Avar(--gold)%3B%7D'%20%2B%20'tr%5Bdata-rank%3D%222%22%5D%20td.col-rank%7Bcolor%3Avar(--silver)%3B%7D'%20%2B%20'tr%5Bdata-rank%3D%223%22%5D%20td.col-rank%7Bcolor%3Avar(--bronze)%3B%7D'%20%2B%20'td.col-athlete%7Bfont-weight%3A600%3B%7D'%20%2B%20'td.col-num%7Bfont-variant-numeric%3Atabular-nums%3B%7D'%20%2B%20'%40media%20print%7Bheader%20.eyebrow%2C.toolbar%7Bdisplay%3Anone%3B%7Dbody%7Bbackground%3A%23fff%3B%7D%7D'%3B%20var%20html%20%3D%20'%3C!DOCTYPE%20html%3E%3Chtml%20lang%3D%22id%22%3E%3Chead%3E%3Cmeta%20charset%3D%22UTF-8%22%3E'%20%2B%20'%3Ctitle%3E'%20%2B%20esc(clubName%20%7C%7C%20'Club%20Leaderboard')%20%2B%20'%3C%2Ftitle%3E'%20%2B%20'%3Cstyle%3E'%20%2B%20css%20%2B%20'%3C%2Fstyle%3E%3C%2Fhead%3E%3Cbody%3E'%20%2B%20'%3Cheader%3E%3Cdiv%20class%3D%22eyebrow%22%3EStrava%20Club%20Leaderboard%3C%2Fdiv%3E'%20%2B%20'%3Ch1%3E'%20%2B%20esc(clubName%20%7C%7C%20'Club%20Leaderboard')%20%2B%20'%3C%2Fh1%3E'%20%2B%20'%3Cp%3E'%20%2B%20esc(period)%20%2B%20'%20%C2%B7%20diekstrak%20'%20%2B%20esc(new%20Date().toLocaleString('id-ID'))%20%2B%20'%3C%2Fp%3E%3C%2Fheader%3E'%20%2B%20'%3Cmain%3E%3Cdiv%20class%3D%22toolbar%22%3E%3Cbutton%20class%3D%22btn%22%20onclick%3D%22window.print()%22%3E%F0%9F%96%A8%EF%B8%8F%20Cetak%20%2F%20Simpan%20PDF%3C%2Fbutton%3E%3C%2Fdiv%3E'%20%2B%20'%3Ctable%20class%3D%22leaderboard-table%22%3E%3Cthead%3E%3Ctr%3E'%20%2B%20'%3Cth%3ERank%3C%2Fth%3E%3Cth%3EAtlet%3C%2Fth%3E%3Cth%3EWaktu%3C%2Fth%3E%3Cth%3EAktivitas%3C%2Fth%3E%3Cth%3EJarak%3C%2Fth%3E%3Cth%3EElev.%20Gain%3C%2Fth%3E'%20%2B%20'%3C%2Ftr%3E%3C%2Fthead%3E%3Ctbody%3E'%20%2B%20rowsHtml%20%2B%20'%3C%2Ftbody%3E%3C%2Ftable%3E%3C%2Fmain%3E%3C%2Fbody%3E%3C%2Fhtml%3E'%3B%20w.document.open()%3B%20w.document.write(html)%3B%20w.document.close()%3B%20%7D)()%3B" onclick="return confirm('Bookmarklet ini hanya berfungsi jika di-drag ke bookmark bar, bukan diklik langsung di sini.\n\nLanjutkan klik langsung sebagai uji coba?');">📥 Ekstrak Leaderboard Strava</a>
+      <span class="drag-hint">← seret ke bookmark bar</span>
     </div>
-    <div id="status"></div>
+    <details>
+      <summary>Drag-and-drop tidak berhasil? Buat manual</summary>
+      <ol class="manual-steps">
+        <li>Klik kanan pada bookmark bar browsermu → pilih "Add page" / "Tambah bookmark".</li>
+        <li>Isi <strong>Nama</strong>: <code>Ekstrak Leaderboard Strava</code></li>
+        <li>Isi <strong>URL</strong> dengan kode di bawah ini (copy semuanya, termasuk kata <code>javascript:</code> di depan):</li>
+      </ol>
+      <textarea id="codeBox" readonly>javascript:(function () { function ct(tr, sel) { var el = tr.querySelector(sel); return el ? el.textContent.replace(/\s+/g, &#x27; &#x27;).trim() : &#x27;&#x27;; } function esc(s) { return String(s) .replace(/&amp;/g, &#x27;&amp;amp;&#x27;) .replace(/&lt;/g, &#x27;&amp;lt;&#x27;) .replace(/&gt;/g, &#x27;&amp;gt;&#x27;) .replace(/&quot;/g, &#x27;&amp;quot;&#x27;); } var table = document.querySelector(&#x27;div.leaderboard table.dense.striped.sortable&#x27;) || document.querySelector(&#x27;table.dense.striped.sortable&#x27;) || document.querySelector(&#x27;div.leaderboard table&#x27;); if (!table) { alert(&#x27;Tabel leaderboard tidak ditemukan.\nPastikan Anda berada di halaman &quot;Club Leaderboard&quot; Strava, lalu coba lagi.&#x27;); return; } var rows = Array.prototype.slice .call(table.querySelectorAll(&#x27;tbody tr&#x27;)) .map(function (tr) { var rankEl = tr.querySelector(&#x27;td.rank&#x27;); var rank = rankEl ? rankEl.textContent.trim() : &#x27;&#x27;; var athleteEl = tr.querySelector(&#x27;a.athlete-name&#x27;); var athlete = athleteEl ? athleteEl.textContent.trim() : &#x27;&#x27;; return { rank: rank, athlete: athlete, mt: ct(tr, &#x27;td.moving_time&#x27;), na: ct(tr, &#x27;td.num_activities&#x27;), dist: ct(tr, &#x27;td.distance&#x27;), el: ct(tr, &#x27;td.elev_gain&#x27;), }; }) .filter(function (r) { return r.athlete; }); if (!rows.length) { alert(&#x27;Tabel ditemukan, tapi tidak ada baris data yang bisa diekstrak.&#x27;); return; } var clubName = (document.title || &#x27;&#x27;).split(&#x27;|&#x27;)[0].trim(); var headingEl = document.getElementById(&#x27;leaderboard-heading&#x27;); var period = headingEl ? headingEl.textContent.trim() : &#x27;&#x27;; var w = window.open(&#x27;&#x27;, &#x27;_blank&#x27;); if (!w) { alert(&#x27;Popup diblokir browser. Izinkan popup untuk strava.com, lalu klik bookmarklet ini lagi.&#x27;); return; } var rowsHtml = rows .map(function (r) { return ( &#x27;&lt;tr data-rank=&quot;&#x27; + esc(r.rank) + &#x27;&quot;&gt;&#x27; + &#x27;&lt;td class=&quot;col-rank&quot;&gt;&#x27; + esc(r.rank) + &#x27;&lt;/td&gt;&#x27; + &#x27;&lt;td class=&quot;col-athlete&quot;&gt;&#x27; + esc(r.athlete) + &#x27;&lt;/td&gt;&#x27; + &#x27;&lt;td class=&quot;col-num&quot;&gt;&#x27; + esc(r.mt) + &#x27;&lt;/td&gt;&#x27; + &#x27;&lt;td class=&quot;col-num&quot;&gt;&#x27; + esc(r.na) + &#x27;&lt;/td&gt;&#x27; + &#x27;&lt;td class=&quot;col-num&quot;&gt;&#x27; + esc(r.dist) + &#x27;&lt;/td&gt;&#x27; + &#x27;&lt;td class=&quot;col-num&quot;&gt;&#x27; + esc(r.el) + &#x27;&lt;/td&gt;&#x27; + &#x27;&lt;/tr&gt;&#x27; ); }) .join(&#x27;&#x27;); var css = &#x27;:root{--ink:#1b1b1b;--paper:#fbf9f6;--line:#e7e2da;--accent:#fc5200;--accent-dark:#c74000;--muted:#6b6560;--gold:#d4a017;--silver:#9aa0a6;--bronze:#b5651d;}&#x27; + &#x27;*{box-sizing:border-box;}&#x27; + &#x27;body{margin:0;font-family:&quot;Segoe UI&quot;,Roboto,Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);}&#x27; + &#x27;header{padding:28px 24px 18px;border-bottom:3px solid var(--ink);background:#fff;}&#x27; + &#x27;header .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:6px;}&#x27; + &#x27;header h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-0.01em;}&#x27; + &#x27;header p{margin:6px 0 0;color:var(--muted);font-size:14px;}&#x27; + &#x27;main{max-width:900px;margin:0 auto;padding:22px 20px 50px;}&#x27; + &#x27;.toolbar{display:flex;justify-content:flex-end;margin-bottom:14px;}&#x27; + &#x27;.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:none;font-size:14px;font-weight:700;cursor:pointer;background:var(--accent);color:#fff;}&#x27; + &#x27;.btn:hover{background:var(--accent-dark);}&#x27; + &#x27;table.leaderboard-table{width:100%;border-collapse:collapse;font-size:14px;background:#fff;}&#x27; + &#x27;table.leaderboard-table thead th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--ink);padding:10px;white-space:nowrap;}&#x27; + &#x27;table.leaderboard-table tbody td{padding:10px;border-bottom:1px solid var(--line);}&#x27; + &#x27;table.leaderboard-table tbody tr:nth-child(even){background:#faf7f2;}&#x27; + &#x27;td.col-rank{font-weight:800;width:46px;text-align:center;font-variant-numeric:tabular-nums;}&#x27; + &#x27;tr[data-rank=&quot;1&quot;] td.col-rank{color:var(--gold);}&#x27; + &#x27;tr[data-rank=&quot;2&quot;] td.col-rank{color:var(--silver);}&#x27; + &#x27;tr[data-rank=&quot;3&quot;] td.col-rank{color:var(--bronze);}&#x27; + &#x27;td.col-athlete{font-weight:600;}&#x27; + &#x27;td.col-num{font-variant-numeric:tabular-nums;}&#x27; + &#x27;@media print{header .eyebrow,.toolbar{display:none;}body{background:#fff;}}&#x27;; var html = &#x27;&lt;!DOCTYPE html&gt;&lt;html lang=&quot;id&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&#x27; + &#x27;&lt;title&gt;&#x27; + esc(clubName || &#x27;Club Leaderboard&#x27;) + &#x27;&lt;/title&gt;&#x27; + &#x27;&lt;style&gt;&#x27; + css + &#x27;&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&#x27; + &#x27;&lt;header&gt;&lt;div class=&quot;eyebrow&quot;&gt;Strava Club Leaderboard&lt;/div&gt;&#x27; + &#x27;&lt;h1&gt;&#x27; + esc(clubName || &#x27;Club Leaderboard&#x27;) + &#x27;&lt;/h1&gt;&#x27; + &#x27;&lt;p&gt;&#x27; + esc(period) + &#x27; · diekstrak &#x27; + esc(new Date().toLocaleString(&#x27;id-ID&#x27;)) + &#x27;&lt;/p&gt;&lt;/header&gt;&#x27; + &#x27;&lt;main&gt;&lt;div class=&quot;toolbar&quot;&gt;&lt;button class=&quot;btn&quot; onclick=&quot;window.print()&quot;&gt;🖨️ Cetak / Simpan PDF&lt;/button&gt;&lt;/div&gt;&#x27; + &#x27;&lt;table class=&quot;leaderboard-table&quot;&gt;&lt;thead&gt;&lt;tr&gt;&#x27; + &#x27;&lt;th&gt;Rank&lt;/th&gt;&lt;th&gt;Atlet&lt;/th&gt;&lt;th&gt;Waktu&lt;/th&gt;&lt;th&gt;Aktivitas&lt;/th&gt;&lt;th&gt;Jarak&lt;/th&gt;&lt;th&gt;Elev. Gain&lt;/th&gt;&#x27; + &#x27;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&#x27; + rowsHtml + &#x27;&lt;/tbody&gt;&lt;/table&gt;&lt;/main&gt;&lt;/body&gt;&lt;/html&gt;&#x27;; w.document.open(); w.document.write(html); w.document.close(); })();</textarea>
+      <button class="btn-copy" onclick="copyCode()">Salin Kode</button>
+      <div id="copyStatus" style="font-size:12.5px;color:#2e7d32;margin-top:6px;"></div>
+    </details>
   </section>
 
-  <section class="panel result-panel" id="resultPanel" style="display:none;">
-    <div class="toolbar">
-      <div class="club-meta" id="clubMeta"></div>
-      <div class="actions">
-        <button class="btn secondary" id="printBtn" type="button">🖨️ Cetak / Simpan PDF</button>
-        <button class="btn" id="resetBtn" type="button" style="background:#8a8378;">Unggah File Lain</button>
-      </div>
-    </div>
-    <div id="tableWrapper"></div>
-    <footer class="note">Data diekstrak langsung dari file HTML yang diunggah, sepenuhnya di dalam browser Anda — tidak ada data yang dikirim ke server manapun.</footer>
+  <section class="panel">
+    <h2><span class="step-num">2</span> Buka halaman leaderboard klub</h2>
+    <p>Login ke Strava seperti biasa, lalu buka halaman leaderboard klub yang ingin diekstrak, misalnya:</p>
+    <p><code>https://www.strava.com/clubs/&lt;id-klub&gt;/leaderboard</code></p>
   </section>
+
+  <section class="panel">
+    <h2><span class="step-num">3</span> Klik bookmark-nya</h2>
+    <p>Klik bookmark <strong>"Ekstrak Leaderboard Strava"</strong> yang sudah kamu simpan. Tab baru akan terbuka otomatis berisi tabel leaderboard yang rapi, lengkap dengan tombol <strong>🖨️ Cetak / Simpan PDF</strong>.</p>
+    <div class="note">
+      Jika tab baru tidak muncul, kemungkinan browser memblokir popup untuk strava.com. Izinkan popup untuk situs tersebut lalu klik bookmark-nya sekali lagi.
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Catatan &amp; batasan <span class="badge-warn">penting</span></h2>
+    <p>Kode ini berjalan sepenuhnya di browser kamu sendiri, di dalam halaman Strava yang sedang terbuka — tidak ada data yang dikirim ke server manapun. Karena itu:</p>
+    <ol class="manual-steps">
+      <li>Kamu harus dalam keadaan <strong>sudah login</strong> ke Strava di tab tersebut.</li>
+      <li>Bookmarklet ini dibuat berdasarkan struktur halaman leaderboard Strava saat ini; jika Strava mengubah tampilan HTML-nya di kemudian hari, ekstraksi mungkin perlu disesuaikan lagi.</li>
+      <li>Ini murni alat bantu ekspor tampilan untuk pemakaian pribadi/klub — bukan pengganti API resmi Strava.</li>
+    </ol>
+  </section>
+
 </main>
 
 <script>
-(function(){
-  const fileInput = document.getElementById('fileInput');
-  const chooseFileBtn = document.getElementById('chooseFileBtn');
-  const dropZone = document.getElementById('dropZone');
-  const statusEl = document.getElementById('status');
-  const resultPanel = document.getElementById('resultPanel');
-  const tableWrapper = document.getElementById('tableWrapper');
-  const clubMeta = document.getElementById('clubMeta');
-  const printBtn = document.getElementById('printBtn');
-  const resetBtn = document.getElementById('resetBtn');
-
-  chooseFileBtn.addEventListener('click', () => fileInput.click());
-  fileInput.addEventListener('change', (e) => {
-    if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
-  });
-
-  ['dragenter','dragover'].forEach(evt => {
-    dropZone.addEventListener(evt, (e) => {
-      e.preventDefault(); e.stopPropagation();
-      dropZone.classList.add('drag');
+  function copyCode(){
+    var box = document.getElementById('codeBox');
+    box.select();
+    box.setSelectionRange(0, 999999);
+    navigator.clipboard.writeText(box.value).then(function(){
+      document.getElementById('copyStatus').textContent = 'Tersalin! Tempel sebagai URL bookmark.';
+    }).catch(function(){
+      document.execCommand('copy');
+      document.getElementById('copyStatus').textContent = 'Tersalin! Tempel sebagai URL bookmark.';
     });
-  });
-  ['dragleave','drop'].forEach(evt => {
-    dropZone.addEventListener(evt, (e) => {
-      e.preventDefault(); e.stopPropagation();
-      dropZone.classList.remove('drag');
-    });
-  });
-  dropZone.addEventListener('drop', (e) => {
-    const file = e.dataTransfer.files && e.dataTransfer.files[0];
-    if (file) handleFile(file);
-  });
-
-  resetBtn.addEventListener('click', () => {
-    resultPanel.style.display = 'none';
-    fileInput.value = '';
-    setStatus('', '');
-  });
-
-  printBtn.addEventListener('click', () => window.print());
-
-  function setStatus(msg, type){
-    statusEl.textContent = msg;
-    statusEl.className = type || '';
   }
-
-  function handleFile(file){
-    if (!/\.html?$/i.test(file.name)){
-      setStatus('Mohon unggah file dengan ekstensi .html atau .htm', 'error');
-      return;
-    }
-    setStatus('Membaca file...', '');
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try{
-        extractAndRender(e.target.result, file.name);
-      }catch(err){
-        console.error(err);
-        setStatus('Gagal mengekstrak tabel leaderboard: ' + err.message, 'error');
-      }
-    };
-    reader.onerror = () => setStatus('Gagal membaca file.', 'error');
-    reader.readAsText(file, 'utf-8');
-  }
-
-  function extractAndRender(htmlText, fileName){
-    const doc = new DOMParser().parseFromString(htmlText, 'text/html');
-
-    // 1) Try the most specific Strava leaderboard selector, then fall back progressively.
-    let table = doc.querySelector('div.leaderboard table.dense.striped.sortable')
-      || doc.querySelector('table.dense.striped.sortable')
-      || doc.querySelector('div.leaderboard table');
-
-    if (!table){
-      // Fallback: any table that has a "rank" cell/class somewhere in it
-      const candidates = Array.from(doc.querySelectorAll('table'));
-      table = candidates.find(t => t.querySelector('td.rank, th.rank') || /rank/i.test(t.className));
-    }
-
-    if (!table){
-      setStatus('Tabel leaderboard tidak ditemukan di file ini. Pastikan file adalah halaman "Club Leaderboard" dari Strava.', 'error');
-      resultPanel.style.display = 'none';
-      return;
-    }
-
-    // Club name, if available, for a small header line
-    let clubName = '';
-    const clubScriptMatch = htmlText.match(/Strava\.Models\.Club\(\{[^}]*"name":"([^"]+)"/);
-    if (clubScriptMatch) clubName = clubScriptMatch[1];
-    if (!clubName){
-      const titleTag = doc.querySelector('title');
-      if (titleTag) clubName = titleTag.textContent.split('|')[0].trim();
-    }
-
-    const heading = doc.getElementById('leaderboard-heading');
-    const periodLabel = heading ? heading.textContent.trim() : '';
-
-    // Build header labels
-    const headerCells = Array.from(table.querySelectorAll('thead th'));
-    const headers = headerCells.map(th => {
-      const span = th.querySelector('span.button');
-      return (span ? span.textContent : th.textContent).trim();
-    }).filter(h => h.length > 0);
-
-    // Build rows
-    const rows = Array.from(table.querySelectorAll('tbody tr')).map(tr => {
-      const rank = (tr.querySelector('td.rank') || {}).textContent?.trim() || '';
-      const athleteLink = tr.querySelector('a.athlete-name');
-      const athlete = athleteLink ? athleteLink.textContent.trim() : (tr.querySelector('td.athlete')?.textContent.trim() || '');
-      const movingTime = cellText(tr, 'td.moving_time');
-      const numActivities = cellText(tr, 'td.num_activities');
-      const distance = cellText(tr, 'td.distance');
-      const elevGain = cellText(tr, 'td.elev_gain');
-      return { rank, athlete, movingTime, numActivities, distance, elevGain };
-    }).filter(r => r.athlete);
-
-    if (rows.length === 0){
-      setStatus('Tabel ditemukan, namun tidak ada baris data yang bisa diekstrak.', 'error');
-      resultPanel.style.display = 'none';
-      return;
-    }
-
-    renderTable(rows, clubName, periodLabel, fileName);
-    setStatus(`Berhasil mengekstrak ${rows.length} baris leaderboard.`, 'ok');
-  }
-
-  function cellText(tr, selector){
-    const cell = tr.querySelector(selector);
-    if (!cell) return '';
-    // strip nested tags but keep spacing between number and unit, e.g. "5h 1m"
-    return cell.textContent.replace(/\s+/g, ' ').trim();
-  }
-
-  function renderTable(rows, clubName, periodLabel, fileName){
-    clubMeta.innerHTML = `
-      <strong>${escapeHtml(clubName || 'Club Leaderboard')}</strong>
-      ${periodLabel ? escapeHtml(periodLabel) : ''} ${clubName ? '· ' : ''}<span title="${escapeHtml(fileName)}">sumber: ${escapeHtml(fileName)}</span>
-    `;
-
-    let html = '<table class="leaderboard-table"><thead><tr>';
-    html += '<th>Rank</th><th>Atlet</th><th>Waktu</th><th>Aktivitas</th><th>Jarak</th><th>Elev. Gain</th>';
-    html += '</tr></thead><tbody>';
-
-    rows.forEach(r => {
-      html += `<tr data-rank="${escapeHtml(r.rank)}">
-        <td class="col-rank">${escapeHtml(r.rank)}</td>
-        <td class="col-athlete">${escapeHtml(r.athlete)}</td>
-        <td class="col-num">${escapeHtml(r.movingTime)}</td>
-        <td class="col-num">${escapeHtml(r.numActivities)}</td>
-        <td class="col-num">${escapeHtml(r.distance)}</td>
-        <td class="col-num">${escapeHtml(r.elevGain)}</td>
-      </tr>`;
-    });
-
-    html += '</tbody></table>';
-    tableWrapper.innerHTML = html;
-    resultPanel.style.display = 'block';
-  }
-
-  function escapeHtml(str){
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-})();
 </script>
 
 </body>
